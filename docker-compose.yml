@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
+
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  book-service:
+    build:
+      context: ./book-service
+    container_name: book-service
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/books_db
+    depends_on:
+      - mongo
+
+  customer-service:
+    build:
+      context: ./customer-service
+    container_name: customer-service
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/customers_db
+    depends_on:
+      - mongo
+
+  order-service:
+    build:
+      context: ./order-service
+    container_name: order-service
+    ports:
+      - "9000:9000"  # Corrected to a list
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/orders_db
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
